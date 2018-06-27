@@ -1,6 +1,6 @@
-$('.main').cubeIt({border:'2px solid green'});
+$('.main').cubeIt({border:'2px solid green', animate:false});
 var cube = $('.main').data('cubeIt');
 
-$('#slider').on('change', function(){
-cube.update(parseInt(this.value));
+$('#slider').on('input', function(){
+cube.update({size:parseInt(this.value), animate:true});
 })

@@ -67,12 +67,10 @@
         });
     }
 
-    function setAnimation(){    
-        if(this.options.animate){
+    function setAnimation(){  
             $( "<style type=\"text/css\">@keyframes spin { from { transform: rotateY(0); } \
             to { transform: rotateY(360deg); }\
-            }</style>").appendTo( "head" );
-        }
+            }</style>").appendTo( "head" );        
     }
 
     function setFaceSyles(){
@@ -114,10 +112,10 @@
             setFaceSyles.apply(this);
         },
 
-        update: function(size){
+        update: function(options){
             var cssObject = {};
             var self = this;
-            this.options.size = size;
+            $.extend(this.options, options);
             setCubeStyle.call(self);
             for (face in faceElements){
                 $.extend(cssObject, getTranslate.call(self, face));
