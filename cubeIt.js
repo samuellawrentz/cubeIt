@@ -1,9 +1,25 @@
 (function($){
 
-    function getTranslate(face, size){
+
+    var pluginName = 'cubeIt';
+    var wrapper;
+    var cube;
+    var faceElements = {};
+    var faces = ['front', 'top', 'back', 'left', 'right', 'bottom'];
+
+    var defaults = {           
+        border: "1px solid black",
+        backgroundColor: "transparent",
+        size: 100,
+        animate:false
+    };
+
+
+    function getTranslate(face){
         var translate;
         var translateObj;
         var rotate = 'deg';
+        var size = this.options.size;
 
         switch(face){
             case 'front':
@@ -34,59 +50,89 @@
             break;
 
             default:
-            return false;
+            return {};
         }
 
         return translateObj;
     }
 
-    $.fn.cubeIt = function(settings){
-        var options = $.extend({           
-            border: "1px solid black",
-            backgroundColor: "transparent",
-            size: 100,
-            animate:false
-        }, settings );
-
-        var cssObject = {};
-
-        var wrapper = $('<div class="cube-wrapper"></div>').appendTo(this).css('perspective', '1000px');
-        var cube = $('<div></div>').appendTo(wrapper);
+    function setCubeStyle(){
         cube.addClass('cube');
         cube.css({            
-            'width' : options.size,
+            'width' : this.options.size,
             'position': 'relative',
             'margin': '0 auto',
             'transform-style': 'preserve-3d',
-            'animation': options.animate ? 'spin 5s infinite linear' : 'none'
+            'animation': this.options.animate ? 'spin 5s infinite linear' : 'none'
         });
+    }
 
-        if(options.animate){
+    function setAnimation(){    
+        if(this.options.animate){
             $( "<style type=\"text/css\">@keyframes spin { from { transform: rotateY(0); } \
             to { transform: rotateY(360deg); }\
             }</style>").appendTo( "head" );
         }
+    }
 
-        faceStyles = {
-            'border': options.border,
-            'width': options.size,
-            'height': options.size,
-            'background': options.backgroundColor,
-            'position': 'absolute',
-            'text-align': 'center',
-            'line-height': options.size+'px'
+    function setFaceSyles(){
+        var styles = {
+            'border': this.options.border,
+            'width': this.options.size,
+            'height': this.options.size,
+            'background': this.options.backgroundColor,
+            'position': 'absolute'
         };
 
-        var faces = ['front', 'top', 'back', 'left', 'right', 'bottom'];
-        faces.forEach(function(face){
-            var $face = $('<div>'+ face +'</div>').appendTo(cube).addClass(face);
-            $.extend(cssObject, getTranslate(face, options.size), faceStyles); 
-            $face.css(cssObject);
-        });
-
-
-        
+        $('.face').css(styles);
     }
-})(jQuery);
 
-$('.cuber').cubeIt({size:200, border:'2px solid green'});
+    function CubeIt(element, options){
+        this.element = element;
+        this.options = $.extend({}, defaults, options);
+        this._defaults = defaults;
+        this._name = pluginName;
+        this.init();
+    }
+
+    $.extend(CubeIt.prototype, {
+        init: function(){
+            var self = this;
+            var cssObject = {};
+            wrapper = $('<div class="cube-wrapper"></div>').appendTo($(self.element)).css('perspective', '1000px');
+            cube = $('<div></div>').appendTo(wrapper);
+            setCubeStyle.call(this);
+            setAnimation.call(this);
+            
+            faces.forEach(function(face){
+                var $face = $('<div></div>').appendTo(cube).addClass(face).addClass('face');
+                faceElements[face] = $face; 
+                $.extend(cssObject, getTranslate.call(self, face)); 
+                $face.css(cssObject);
+            });
+
+            setFaceSyles.apply(this);
+        },
+
+        update: function(size){
+            var cssObject = {};
+            var self = this;
+            this.options.size = size;
+            setCubeStyle.call(self);
+            for (face in faceElements){
+                $.extend(cssObject, getTranslate.call(self, face));
+                faceElements[face].css(cssObject);
+            }
+            setFaceSyles.call(self);
+        }
+    });
+
+
+    $.fn[pluginName] = function(options) {
+        return this.each(function() {
+            if (!$.data(this, pluginName)) {
+                $.data(this, pluginName, new CubeIt(this, options));
+            }
+        });
+    };
+})(jQuery);
