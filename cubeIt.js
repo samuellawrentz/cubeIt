@@ -1,3 +1,6 @@
+//This is just a crazy idea
+//I created it for learning purpose
+
 (function($){
 
 
